@@ -1,0 +1,21 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.activities-list, .activities-list td{
+    border: 1px solid black;
+    
+}
+
+.button-add{
+    background: rgb(92, 163, 70);
+}
+.non-active_button{
+    background: gray;
+}
+
+.active-button{
+    background: rgb(92, 163, 70);
+}
+
