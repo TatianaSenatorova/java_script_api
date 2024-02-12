@@ -26,29 +26,29 @@
 
 // Начальные данные (JSON):
 
-const localStorageKeyAllActivities = "activities";
-const localStorageKeyUserActivities = "this_user_activities";
+const allActivitiesLocalStorageKey = "activities";
+const UserActivitiesLocalStorageKey = "user_activities";
 
 const initialActivities =
   '[{"id":1,"name":"Йога","time":"10:00 - 11:00","maxParticipants":15,"currentParticipants":15},{"id":2,"name":"Пилатес","time":"11:30 - 12:30","maxParticipants":10,"currentParticipants":5},{"id":3,"name":"Кроссфит","time":"13:00 - 14:00","maxParticipants":20,"currentParticipants":15},{"id":4,"name":"Танцы","time":"14:30 - 15:30","maxParticipants":12,"currentParticipants":10},{"id":5,"name":"Бокс","time":"16:00 - 17:00","maxParticipants":8,"currentParticipants":6}]';
 
-if (!localStorage.getItem(localStorageKeyAllActivities)) {
-  localStorage.setItem(localStorageKeyAllActivities, initialActivities);
+if (!localStorage.getItem(allActivitiesLocalStorageKey)) {
+  localStorage.setItem(allActivitiesLocalStorageKey, initialActivities);
 }
 
 const activities = JSON.parse(
-  localStorage.getItem(localStorageKeyAllActivities)
+  localStorage.getItem(allActivitiesLocalStorageKey)
 );
 
 const userActivities = [];
 
-if (localStorage.getItem(localStorageKeyUserActivities)) {
+if (localStorage.getItem(UserActivitiesLocalStorageKey)) {
   const userInitialActivities = JSON.parse(
-    localStorage.getItem(localStorageKeyUserActivities)
+    localStorage.getItem(UserActivitiesLocalStorageKey)
   );
   userActivities.push(...userInitialActivities);
 } else {
-  localStorage.setItem(localStorageKeyUserActivities, userActivities);
+  localStorage.setItem(UserActivitiesLocalStorageKey, userActivities);
 }
 
 const activitiesListEl = document.querySelector(".activities-list");
@@ -86,7 +86,6 @@ activitiesListEl.addEventListener("click", ({ target }) => {
 
     userActivities.splice(indexUserActivityToChange, 1);
 
-    console.log(typeof parentId);
     changeButtonsAddState(parentEl);
     changeButtonsCancelState(parentEl);
     saveData(activities);
@@ -96,35 +95,45 @@ activitiesListEl.addEventListener("click", ({ target }) => {
 
 function addActivities() {
   activities.forEach((item) => {
-    activitiesListEl.insertAdjacentHTML(
-      "beforeend",
-      `<tr class="activity" data-id=${item.id}>
-        <td class="activity__title">${item.name}</td>
-        <td class="activity__time">${item.time}</td>
-        <td class="activity__max-people">${item.maxParticipants}</td>
-        <td class="activity__current-people">${item.currentParticipants}</td>
-        <td class="activity-button"><button class="button-add">Записаться</button></td>
-                <td class="activity-button"><button class="button-cancel">Отменить запись</button></td>
-                </tr>
-       `
-    );
-    if (
-      userActivities.length !== 0 &&
-      userActivities.includes(String(item.id))
-    ) {
-      const parentEl = activitiesListEl.querySelector(`[data-id="${item.id}"]`);
-      changeButtonsAddState(parentEl);
-      changeButtonsCancelState(parentEl);
+    if (userActivities.includes(String(item.id))) {
+      activitiesListEl.insertAdjacentHTML(
+        "beforeend",
+        `<tr class="activity" data-id=${item.id}>
+          <td class="activity__title">${item.name}</td>
+          <td class="activity__time">${item.time}</td>
+          <td class="activity__max-people">${item.maxParticipants}</td>
+          <td class="activity__current-people">${item.currentParticipants}</td>
+          <td class="activity-button"><button class="button-add non-active_button" disabled>Записаться</button></td>
+                  <td class="activity-button"><button class="button-cancel active-button">Отменить запись</button></td>
+                  </tr>
+         `
+      );
     } else if (item.currentParticipants === item.maxParticipants) {
-      const parentEl = activitiesListEl.querySelector(`[data-id="${item.id}"]`);
-      changeButtonsAddState(parentEl);
-      const buttonToChange = parentEl.querySelector(".button-cancel");
-      buttonToChange.disabled = true;
-      
+      activitiesListEl.insertAdjacentHTML(
+        "beforeend",
+        `<tr class="activity" data-id=${item.id}>
+          <td class="activity__title">${item.name}</td>
+          <td class="activity__time">${item.time}</td>
+          <td class="activity__max-people">${item.maxParticipants}</td>
+          <td class="activity__current-people">${item.currentParticipants}</td>
+          <td class="activity-button"><button class="button-add non-active_button" disabled>Записаться</button></td>
+                  <td class="activity-button"><button class="button-cancel" disabled>Отменить запись</button></td>
+                  </tr>
+         `
+      );
     } else {
-      activitiesListEl
-        .querySelector(`[data-id="${item.id}"]`)
-        .querySelector(".button-cancel").disabled = true;
+      activitiesListEl.insertAdjacentHTML(
+        "beforeend",
+        `<tr class="activity" data-id=${item.id}>
+          <td class="activity__title">${item.name}</td>
+          <td class="activity__time">${item.time}</td>
+          <td class="activity__max-people">${item.maxParticipants}</td>
+          <td class="activity__current-people">${item.currentParticipants}</td>
+          <td class="activity-button"><button class="button-add">Записаться</button></td>
+                  <td class="activity-button"><button class="button-cancel">Отменить запись</button></td>
+                  </tr>
+         `
+      );
     }
   });
 }
@@ -138,7 +147,6 @@ function changeButtonsAddState(parentEl) {
 function changeButtonsCancelState(parentEl) {
   const buttonToChange = parentEl.querySelector(".button-cancel");
   buttonToChange.classList.toggle("active-button");
-  buttonToChange.disabled = !buttonToChange.disabled;
 }
 
 function changePeopleAdd(parentEl) {
@@ -159,14 +167,14 @@ function changePeopleRemove(parentEl) {
 
 function saveData(activities) {
   localStorage.setItem(
-    localStorageKeyAllActivities,
+    allActivitiesLocalStorageKey,
     JSON.stringify(activities)
   );
 }
 
 function saveUserData(userActivities) {
   localStorage.setItem(
-    localStorageKeyUserActivities,
+    UserActivitiesLocalStorageKey,
     JSON.stringify(userActivities)
   );
 }
