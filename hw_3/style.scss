@@ -1,0 +1,114 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+img {
+    max-width: 100%;
+}
+
+body {
+    font-family: "Roboto", sans-serif;
+}
+
+.photo {
+    width: 400px;
+    margin: 0 auto;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border: 1px solid rgb(3, 3, 153);
+    border-radius: 5px;
+
+    &__box {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    &__img {
+        object-fit: cover;
+    }
+
+    &__author {
+        color: rgb(3, 3, 153);
+        font-size: 14px;
+    }
+
+    &__user-box {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    &__box-like {
+        color: rgb(3, 3, 153);
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    &__picture-like {
+        width: 40px;
+        height: 40px;
+    }
+
+    &__picture-like path {
+        fill: rgb(255, 255, 0);
+        transition: 0.3s;
+    }
+
+    &__like {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+}
+
+.previous {
+    width: 400px;
+    margin: 0 auto;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border: 1px solid rgb(3, 3, 153);
+    border-radius: 5px;
+}
+
+.button {
+    padding: 10px;
+    background: rgb(0, 195, 255);
+    border-radius: 10px;
+    border: 1px solid rgb(3, 3, 153);
+    color: rgb(3, 3, 153);
+    font-size: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+
+    &:hover {
+        background: rgb(152, 224, 246);
+    }
+
+    &:disabled {
+        background: rgb(220, 220, 220);
+        color: rgb(105, 105, 105);
+        cursor: none;
+    }
+    &_like{
+        width: 170px;
+    }
+
+    &_dislike {
+        width: 110px;
+        padding: 2px;
+        font-size: 14px;
+        background: rgb(255, 255, 255);
+    }
+
+}
