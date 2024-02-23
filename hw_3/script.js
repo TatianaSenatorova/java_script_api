@@ -25,11 +25,16 @@
 // • Реализуйте возможность просмотра предыдущих фото с сохранением их в истории просмотров в localstorage.
 // • Реализовать все с помощью async/await, без цепочем then.
 
-const applicationKey = "nhmiJOXlNEj7sNCc-IhRbDgp_89Gs_owPDtJycLkHSg";
+const applicationKey = "8aTQg1O8aCj_1v-luAn0H7Km2ne6MAUQfjCpM9tbZ8M";
+const requestForRandomPhotos = `https://api.unsplash.com/photos/random?client_id=${applicationKey}`;
+
 const photoEl = document.querySelector(".photo");
 const imgBoxEl = document.querySelector(".photo__box");
 const likesCounterEl = document.querySelector(".photo__likes-number");
 const buttonLikeEl = document.querySelector(".button_like");
+const buttonDislikeEl = document.querySelector(".button_dislike");
+const previousPhotoBoxEl = document.querySelector(".previous");
+
 const allPhotosStorageKey = "photos";
 const userLikesStorageKey = "userLikes";
 
@@ -42,26 +47,76 @@ if (localStorage.getItem(allPhotosStorageKey)) {
 }
 
 if (localStorage.getItem(userLikesStorageKey)) {
-  const initialUserLikes = JSON.parse(localStorage.getItem(userLikesStorageKey));
+  const initialUserLikes = JSON.parse(
+    localStorage.getItem(userLikesStorageKey)
+  );
   userLikes.push(...initialUserLikes);
 }
 
 photoEl.addEventListener("click", ({ target }) => {
   if (target.closest(".photo__box-like") && !buttonLikeEl.disabled) {
-    const numLikesThisPhoto = (+likesCounterEl.textContent) + 1;
-    likesCounterEl.textContent = numLikesThisPhoto;
-    buttonLikeEl.disabled = true;
-    buttonLikeEl.textContent = "Вы уже поставили лайк";
-  } else if (target.closest(".photo__box-dislike")) {
+    changeButtonsLike();
+    const photoToChangeLikes = getPhotoToChange(target);
+    photoToChangeLikes.likes = +photoToChangeLikes.likes + 1;
+    userLikes.push(photoToChangeLikes);
+  } else if (target.matches(".button_dislike") && !buttonDislikeEl.disabled) {
+    changeButtonsDislike();
+    const photoToChangeLikes = getPhotoToChange(target);
+    photoToChangeLikes.likes = +photoToChangeLikes.likes - 1;
+    userLikes.splice(userLikes.indexOf(photoToChangeLikes), 1);
+  }
+  saveData();
+});
+
+previousPhotoBoxEl.addEventListener("click", ({ target }) => {
+  if (target.matches(".button_previous")) {
+    fillPreviousPhotos();
   }
 });
 
+async function fillPreviousPhotos() {
+  for (let i = 0; i < photos.length - 1; i++) {
+    console.log(photos[i].id);
+    let photoData = await fetchImage(`https://api.unsplash.com/photos/${photos[i].id}?client_id=${applicationKey}`);
+    
+    previousPhotoBoxEl.insertAdjacentHTML(
+      "beforeend",
+      `
+  <img src="${photoData.urls.small}" alt="" class="photo__img">
+  <p class="photo__author">${photoData.user.first_name} ${photoData.user.last_name}</p>
+  `
+    );
+  }
+}
+
 fillPage();
 
-async function fetchImage() {
+function changeButtonsLike() {
+  likesCounterEl.textContent = +likesCounterEl.textContent + 1;
+  buttonLikeEl.disabled = true;
+  buttonLikeEl.textContent = "Вы уже поставили лайк";
+  buttonDislikeEl.disabled = false;
+  buttonDislikeEl.textContent = "Удалить лайк";
+}
+
+function changeButtonsDislike() {
+  likesCounterEl.textContent = +likesCounterEl.textContent - 1;
+  buttonLikeEl.disabled = false;
+  buttonLikeEl.textContent = "Поставьте лайк";
+  buttonDislikeEl.disabled = true;
+  buttonDislikeEl.textContent = "Вы не лайкнули";
+}
+
+function getPhotoToChange(target) {
+  const photoId = target.closest(".photo").getAttribute("data-id");
+  return photos.find((item) => item.id === photoId);
+}
+
+async function fetchImage(applicationKeyOrId) {
+  console.log(applicationKeyOrId);
   try {
     const response = await fetch(
-      `https://api.unsplash.com/photos/random?client_id=${applicationKey}`
+      applicationKeyOrId
     );
     if (!response.ok) {
       throw new Error("Сервер не отвечает");
@@ -74,7 +129,9 @@ async function fetchImage() {
 }
 
 async function fillPage() {
-  const photoData = await fetchImage();
+  const photoData = await fetchImage(requestForRandomPhotos);
+  console.log(photoData);
+  photoEl.dataset.id = photoData.id;
   imgBoxEl.insertAdjacentHTML(
     "beforeend",
     `
@@ -82,15 +139,16 @@ async function fillPage() {
   <p class="photo__author">${photoData.user.first_name} ${photoData.user.last_name}</p>
   `
   );
+  if (userLikes.includes(photoData.id)) {
+    changeButtonsLike();
+    photoData.likes += 1;
+  }
   likesCounterEl.textContent = photoData.likes;
-  saveDownloadedPhoto(photoData);
-}
-
-function saveDownloadedPhoto(photoData) {
   photos.push({ id: photoData.id, likes: photoData.likes });
-  saveData(photos);
+  saveData();
 }
 
-function saveData(photos) {
+function saveData() {
   localStorage.setItem(allPhotosStorageKey, JSON.stringify(photos));
+  localStorage.setItem(userLikesStorageKey, JSON.stringify(userLikes));
 }
