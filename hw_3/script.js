@@ -25,7 +25,7 @@
 // • Реализуйте возможность просмотра предыдущих фото с сохранением их в истории просмотров в localstorage.
 // • Реализовать все с помощью async/await, без цепочем then.
 
-const applicationKey = "cAGJaZsCLYMifxQMjKzO0h_IvJm68kFynG6WaWAymCM";
+const applicationKey = ""; //ваш ключ
 const requestForRandomPhotos = `https://api.unsplash.com/photos/random?client_id=${applicationKey}`;
 
 const photoEl = document.querySelector(".photo");
