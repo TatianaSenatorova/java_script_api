@@ -25,7 +25,7 @@
 // • Реализуйте возможность просмотра предыдущих фото с сохранением их в истории просмотров в localstorage.
 // • Реализовать все с помощью async/await, без цепочем then.
 
-const applicationKey = "8aTQg1O8aCj_1v-luAn0H7Km2ne6MAUQfjCpM9tbZ8M";
+const applicationKey = "cAGJaZsCLYMifxQMjKzO0h_IvJm68kFynG6WaWAymCM";
 const requestForRandomPhotos = `https://api.unsplash.com/photos/random?client_id=${applicationKey}`;
 
 const photoEl = document.querySelector(".photo");
@@ -44,6 +44,8 @@ const photos = [];
 const userLikes = [];
 const history = [];
 
+let countPrevPhoto = 0;
+
 if (localStorage.getItem(allPhotosStorageKey)) {
   const initialPhotos = JSON.parse(localStorage.getItem(allPhotosStorageKey));
   photos.push(...initialPhotos);
@@ -54,6 +56,11 @@ if (localStorage.getItem(userLikesStorageKey)) {
     localStorage.getItem(userLikesStorageKey)
   );
   userLikes.push(...initialUserLikes);
+}
+
+if (localStorage.getItem(historyStorageKey)) {
+  const initialHistory = JSON.parse(localStorage.getItem(historyStorageKey));
+  history.push(...initialHistory);
 }
 
 fillPage();
@@ -80,17 +87,33 @@ previousPhotoBoxEl.addEventListener("click", ({ target }) => {
 });
 
 async function fillPreviousPhotos() {
-  for (let i = 0; i < photos.length - 1; i++) {
-    let photoData = await fetchImage(
-      `https://api.unsplash.com/photos/${photos[i].id}?client_id=${applicationKey}`
-    );
-    previousPhotoBoxEl.insertAdjacentHTML(
-      "beforeend",
-      `
+  const showPhotoItemIndex = photos.length - countPrevPhoto - 2;
+
+  let photoData = await fetchImage(
+    `https://api.unsplash.com/photos/${photos[showPhotoItemIndex].id}?client_id=${applicationKey}`
+  );
+  previousPhotoBoxEl.insertAdjacentHTML(
+    "beforeend",
+    `
   <img src="${photoData.urls.small}" alt="" class="photo__img">
   <p class="photo__author">${photoData.user.first_name} ${photoData.user.last_name}</p>
   `
-    );
+  );
+  const itemToChangeCountWatch = history.find(
+    (item) => item.id === photoData.id
+  );
+
+  if (itemToChangeCountWatch !== undefined) {
+    const indexItemCountChange = history.indexOf(itemToChangeCountWatch);
+    history[indexItemCountChange].watch += 1;
+  } else {
+    history.push({ id: photoData.id, watch: 1 });
+  }
+  countPrevPhoto += 1;
+  saveHistoryData();
+  if (countPrevPhoto === photos.length - 1) {
+    buttonPreviousEl.textContent = "У Вас больше нет фото в истории";
+    buttonPreviousEl.disabled = true;
   }
 }
 
@@ -146,6 +169,7 @@ async function fillPage() {
   photos.push({ id: photoData.id, likes: photoData.likes });
   if (photos.length >= 2) {
     buttonPreviousEl.textContent = "Посмотреть предыдущее фото";
+    buttonPreviousEl.disabled = false;
   }
   saveData();
 }
@@ -153,4 +177,7 @@ async function fillPage() {
 function saveData() {
   localStorage.setItem(allPhotosStorageKey, JSON.stringify(photos));
   localStorage.setItem(userLikesStorageKey, JSON.stringify(userLikes));
+}
+function saveHistoryData() {
+  localStorage.setItem(historyStorageKey, JSON.stringify(history));
 }
