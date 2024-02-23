@@ -34,12 +34,15 @@ const likesCounterEl = document.querySelector(".photo__likes-number");
 const buttonLikeEl = document.querySelector(".button_like");
 const buttonDislikeEl = document.querySelector(".button_dislike");
 const previousPhotoBoxEl = document.querySelector(".previous");
+const buttonPreviousEl = document.querySelector(".button_previous");
 
 const allPhotosStorageKey = "photos";
 const userLikesStorageKey = "userLikes";
+const historyStorageKey = "history";
 
 const photos = [];
 const userLikes = [];
+const history = [];
 
 if (localStorage.getItem(allPhotosStorageKey)) {
   const initialPhotos = JSON.parse(localStorage.getItem(allPhotosStorageKey));
@@ -52,6 +55,8 @@ if (localStorage.getItem(userLikesStorageKey)) {
   );
   userLikes.push(...initialUserLikes);
 }
+
+fillPage();
 
 photoEl.addEventListener("click", ({ target }) => {
   if (target.closest(".photo__box-like") && !buttonLikeEl.disabled) {
@@ -76,9 +81,9 @@ previousPhotoBoxEl.addEventListener("click", ({ target }) => {
 
 async function fillPreviousPhotos() {
   for (let i = 0; i < photos.length - 1; i++) {
-    console.log(photos[i].id);
-    let photoData = await fetchImage(`https://api.unsplash.com/photos/${photos[i].id}?client_id=${applicationKey}`);
-    
+    let photoData = await fetchImage(
+      `https://api.unsplash.com/photos/${photos[i].id}?client_id=${applicationKey}`
+    );
     previousPhotoBoxEl.insertAdjacentHTML(
       "beforeend",
       `
@@ -88,8 +93,6 @@ async function fillPreviousPhotos() {
     );
   }
 }
-
-fillPage();
 
 function changeButtonsLike() {
   likesCounterEl.textContent = +likesCounterEl.textContent + 1;
@@ -113,11 +116,8 @@ function getPhotoToChange(target) {
 }
 
 async function fetchImage(applicationKeyOrId) {
-  console.log(applicationKeyOrId);
   try {
-    const response = await fetch(
-      applicationKeyOrId
-    );
+    const response = await fetch(applicationKeyOrId);
     if (!response.ok) {
       throw new Error("Сервер не отвечает");
     }
@@ -130,7 +130,6 @@ async function fetchImage(applicationKeyOrId) {
 
 async function fillPage() {
   const photoData = await fetchImage(requestForRandomPhotos);
-  console.log(photoData);
   photoEl.dataset.id = photoData.id;
   imgBoxEl.insertAdjacentHTML(
     "beforeend",
@@ -145,6 +144,9 @@ async function fillPage() {
   }
   likesCounterEl.textContent = photoData.likes;
   photos.push({ id: photoData.id, likes: photoData.likes });
+  if (photos.length >= 2) {
+    buttonPreviousEl.textContent = "Посмотреть предыдущее фото";
+  }
   saveData();
 }
 
